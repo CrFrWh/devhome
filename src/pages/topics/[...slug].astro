@@ -1,0 +1,21 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const topics = await getCollection('topics');
+  
+  return topics.map((topic) => ({
+    params: { slug: topic.id.replace(/\.mdx?$/, '') }, // Remove .md or .mdx extension
+    props: { entry: topic },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<Layout>
+  <h1>{entry.data.title}</h1>
+  <Content />
+</Layout>

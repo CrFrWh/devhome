@@ -1,0 +1,17 @@
+{
+  "name": "devhome",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.12",
+    "@codesandbox/sandpack-react": "^2.20.0",
+    "astro": "^5.16.2",
+    "shiki": "^3.17.0"
+  }
+}
