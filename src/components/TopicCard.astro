@@ -1,0 +1,120 @@
+---
+const { title, description, href, badge } = Astro.props;
+
+// Badge colors based on difficulty
+const badgeColors: Record<string, string> = {
+  beginner: "#4caf50",
+  intermediate: "#ff9800",
+  advanced: "#f44336",
+  "n/a": "#6c757d",
+};
+const badgeColor = badgeColors[badge] || "#6c757d";
+---
+
+<a href={href} class="card" aria-label={`Link to topic: ${title}`}>
+  <div class="card-content">
+    <div class="header">
+      <h3 class="title" aria-label={title}>{title}</h3>
+      {
+        badge && badge !== "n/a" && (
+          <span
+            class="badge"
+            style={`border-color: ${badgeColor}; color: ${badgeColor}`}
+          >
+            {badge}
+          </span>
+        )
+      }
+    </div>
+    {description && <p class="description">{description}</p>}
+  </div>
+  <div class="card-footer">
+    <span class="arrow">→</span>
+  </div>
+</a>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.25rem;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    background: #161b22;
+    transition:
+      transform 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+    text-decoration: none;
+    color: inherit;
+    min-height: 140px;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: #58a6ff;
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.15);
+  }
+
+  .card-content {
+    flex: 1;
+  }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #e6edf3;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    opacity: 0.9;
+  }
+
+  .description {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #8b949e;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #30363d;
+  }
+
+  .arrow {
+    font-size: 1.2rem;
+    color: #58a6ff;
+    transition: transform 0.15s ease;
+  }
+
+  .card:hover .arrow {
+    transform: translateX(4px);
+  }
+</style>

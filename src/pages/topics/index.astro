@@ -1,0 +1,126 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import TopicCard from "../../components/TopicCard.astro";
+import { getCollection } from "astro:content";
+
+const allTopics = await getCollection("topics");
+
+// Group by category
+const byCategory = allTopics.reduce(
+  (acc, topic) => {
+    const cat = topic.data.category;
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(topic);
+    return acc;
+  },
+  {} as Record<string, typeof allTopics>
+);
+
+// Sort categories alphabetically
+const categories = Object.keys(byCategory).sort();
+
+// Category display names and colors (optional)
+const categoryMeta: Record<string, { label: string; color: string }> = {
+  javascript: { label: "JavaScript", color: "#f7df1e" },
+  typescript: { label: "TypeScript", color: "#3178c6" },
+  css: { label: "CSS", color: "#1572b6" },
+  html: { label: "HTML", color: "#e34f26" },
+  node: { label: "Node.js", color: "#339933" },
+  general: { label: "General", color: "#6c757d" },
+  "UX/UI": { label: "UX/UI", color: "#ff6f61" },
+  devtools: { label: "DevTools", color: "#00bcd4" },
+  performance: { label: "Performance", color: "#ff9800" },
+  accessibility: { label: "Accessibility", color: "#4caf50" },
+  security: { label: "Security", color: "#f44336" },
+  testing: { label: "Testing", color: "#9c27b0" },
+  frameworks: { label: "Frameworks", color: "#673ab7" },
+  databases: { label: "Databases", color: "#009688" },
+  APIs: { label: "APIs", color: "#03a9f4" },
+  DX: { label: "DX", color: "#607d8b" },
+};
+---
+
+<Layout title="Topics" description="Explore tutorials across web development">
+  <header class="hero">
+    <h1>Topics</h1>
+    <p class="subtitle">Tutorials and guides organized by technology</p>
+  </header>
+
+  <input type="text" id="search" placeholder="Search topics..." />
+
+  <script>
+    const search = document.getElementById("search");
+    const cards = document.querySelectorAll(".grid a");
+
+    search?.addEventListener("input", (e) => {
+      const query = (e.target as HTMLInputElement).value.toLowerCase();
+      cards.forEach((card) => {
+        const text = card.textContent?.toLowerCase() || "";
+        (card as HTMLElement).style.display = text.includes(query)
+          ? "block"
+          : "none";
+      });
+    });
+  </script>
+
+  {
+    categories.map((cat) => {
+      const topics = byCategory[cat];
+      const meta = categoryMeta[cat] || { label: cat, color: "#6c757d" };
+
+      return (
+        <section class="category-section">
+          <h2
+            class="category-title"
+            style={`border-left: 4px solid ${meta.color}`}
+          >
+            {meta.label}
+            <span class="count">{topics.length}</span>
+          </h2>
+          <div class="grid">
+            {topics.map((topic) => (
+              <TopicCard
+                href={`/topics/${topic.id.replace(/\.mdx?$/, "")}`}
+                title={topic.data.title}
+                description={topic.data.description}
+                badge={topic.data.difficulty}
+              />
+            ))}
+          </div>
+        </section>
+      );
+    })
+  }
+</Layout>
+
+<style>
+  .hero {
+    margin-bottom: 2rem;
+  }
+  .subtitle {
+    opacity: 0.8;
+    margin: 0.5rem 0 0;
+  }
+
+  .category-section {
+    margin: 2rem 0;
+  }
+  .category-title {
+    font-size: 1.5rem;
+    margin: 0 0 1rem;
+    padding-left: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .count {
+    font-size: 0.85rem;
+    opacity: 0.6;
+    font-weight: normal;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+</style>
