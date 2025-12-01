@@ -1,5 +1,6 @@
 ---
-import Navigation from "../components/Navigation.astro";
+import Navbar from "../components/Navbar.astro";
+import Sidebar from "../components/Sidebar.astro";
 
 type Props = {
   title?: string;
@@ -19,32 +20,42 @@ const { title = "DevHome", description = "Tutorials, blog, and showcase" } =
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- Open Graph / Twitter cards can go here too -->
   </head>
   <body>
-    <Navigation />
-    <main class="container">
-      <slot />
-    </main>
+    <Navbar />
+    <div class="layout">
+      <Sidebar />
+      <main class="content">
+        <slot />
+      </main>
+    </div>
   </body>
-</html>
 
-<style is:global>
-  :root {
-    --bg: #0d1117;
-    --fg: #e6edf3;
-    --border: #30363d;
-  }
-  html,
-  body {
-    margin: 0;
-    min-height: 100%;
-    background: var(--bg);
-    color: var(--fg);
-  }
-  .container {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 1.5rem;
-  }
-</style>
+  <style is:global>
+    :root {
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --border: #30363d;
+      --navbar-height: 60px;
+    }
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+    }
+
+    .layout {
+      display: flex;
+      flex-direction: row;
+      min-height: calc(100vh - var(--navbar-height));
+    }
+
+    .content {
+      flex: 1;
+      max-width: 1440px;
+      padding: 1.5rem;
+    }
+  </style>
+</html>

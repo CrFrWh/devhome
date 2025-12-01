@@ -1,0 +1,231 @@
+---
+import { getCollection } from "astro:content";
+
+const currentPath = Astro.url.pathname;
+
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/blog", label: "Blog" },
+  { href: "/showcase", label: "Showcase" },
+];
+
+function isActive(href: string) {
+  if (href === "/") return currentPath === "/";
+  return currentPath === href || currentPath.startsWith(href + "/");
+}
+
+// Get all topics and group by category
+const allTopics = await getCollection("topics");
+const topicsByCategory = allTopics.reduce(
+  (acc, topic) => {
+    const category = topic.data.category || "general";
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(topic);
+    return acc;
+  },
+  {} as Record<string, typeof allTopics>
+);
+
+// Sort categories alphabetically
+const sortedCategories = Object.keys(topicsByCategory).sort();
+
+function isTopicActive(topicId: string) {
+  return currentPath.includes(topicId.replace(/\.mdx?$/, ""));
+}
+---
+
+<nav class="nav">
+  {
+    links.map((l) => (
+      <a href={l.href} class={`link${isActive(l.href) ? " active" : ""}`}>
+        {l.label}
+      </a>
+    ))
+  }
+
+  <div class="topics-section">
+    <div class="section-title">Topics</div>
+    <input
+      type="search"
+      class="search-input"
+      placeholder="Search topics..."
+      id="topic-search"
+    />
+    {
+      sortedCategories.map((category) => {
+        const topics = topicsByCategory[category];
+        const hasActiveTopic = topics.some((t) => isTopicActive(t.id));
+        return (
+          <details class="category-dropdown" open={hasActiveTopic}>
+            <summary class="category-name">
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </summary>
+            <div class="topic-list">
+              {topics.map((topic) => (
+                <a
+                  href={`/topics/${topic.id.replace(/\.mdx?$/, "")}`}
+                  class={`topic-link${isTopicActive(topic.id) ? " active" : ""}`}
+                >
+                  {topic.data.title}
+                </a>
+              ))}
+            </div>
+          </details>
+        );
+      })
+    }
+  </div>
+</nav>
+
+<script>
+  const search = document.getElementById("topic-search") as HTMLInputElement;
+  const topics = document.querySelectorAll(".topic-link");
+  const categories = document.querySelectorAll(".category-dropdown");
+
+  search?.addEventListener("input", (e) => {
+    const query = (e.target as HTMLInputElement).value.toLowerCase();
+
+    categories.forEach((cat) => {
+      const categoryTopics = cat.querySelectorAll(".topic-link");
+      let hasVisibleTopic = false;
+
+      categoryTopics.forEach((topic) => {
+        const text = topic.textContent?.toLowerCase() || "";
+        const matches = text.includes(query);
+        (topic as HTMLElement).style.display = matches ? "" : "none";
+        if (matches) hasVisibleTopic = true;
+      });
+
+      (cat as HTMLElement).style.display = hasVisibleTopic ? "" : "none";
+    });
+  });
+</script>
+
+<style>
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    border-right: 1px solid var(--border, #30363d);
+    width: 12rem;
+    overflow-y: auto;
+  }
+
+  .link {
+    color: var(--fg, #e6edf3);
+    text-decoration: none;
+    opacity: 0.85;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+  }
+
+  .link:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .link.active {
+    font-weight: 600;
+    background-color: rgba(88, 166, 255, 0.15);
+    border-left: 3px solid #58a6ff;
+  }
+
+  .topics-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border, #30363d);
+  }
+
+  .section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fg, #e6edf3);
+    opacity: 0.6;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .category-dropdown {
+    margin: 0;
+  }
+
+  .category-name {
+    color: var(--fg, #e6edf3);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    list-style: none;
+    user-select: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+  }
+
+  .category-name::-webkit-details-marker {
+    display: none;
+  }
+
+  .category-name::before {
+    content: "▶";
+    display: inline-block;
+    margin-right: 0.5rem;
+    transition: transform 0.2s;
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+
+  details[open] .category-name::before {
+    transform: rotate(90deg);
+  }
+
+  .category-name:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .topic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-left: 1.5rem;
+    margin-top: 0.25rem;
+  }
+
+  .topic-link {
+    color: var(--fg, #e6edf3);
+    text-decoration: none;
+    opacity: 0.75;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+
+  .topic-link:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .topic-link.active {
+    font-weight: 600;
+    opacity: 1;
+    background-color: rgba(88, 166, 255, 0.15);
+    border-left: 2px solid #58a6ff;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border, #30363d);
+    border-radius: 0.25rem;
+    color: var(--fg, #e6edf3);
+    font-size: 0.875rem;
+  }
+</style>
