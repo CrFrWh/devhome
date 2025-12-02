@@ -37,6 +37,7 @@ const { title = "DevHome", description = "Tutorials, blog, and showcase" } =
       --fg: #e6edf3;
       --border: #30363d;
       --navbar-height: 60px;
+      --link: #58a6ff;
     }
     html,
     body {
@@ -44,6 +45,13 @@ const { title = "DevHome", description = "Tutorials, blog, and showcase" } =
       height: 100%;
       background: var(--bg);
       color: var(--fg);
+    }
+
+    a {
+      color: var(--link);
+    }
+    a:hover {
+      opacity: 0.7;
     }
 
     .layout {

@@ -1,0 +1,43 @@
+---
+title: "Semantic Elements"
+description: ""
+category: "html"
+difficulty: "beginner"
+tags: ["", "", ""]
+---
+
+## Semantic Elements
+
+A semantic element clearly describes its meaning to both the browser and the developer.
+
+Examples of non-semantic elements: `<div> and <span>`- Tells nothing about its content.
+
+Examples of semantic elements: `<img>,<table>, and <article>` - Clearly defines its content.
+
+Another example is the hgroup element, representing a heading and related content. The element may be used to group an h1–h6 element with one or more p elements containing content representing a subheading, alternative title, or tagline.
+
+[hgroup html
+spec](https://html.spec.whatwg.org/multipage/sections.html#the-hgroup-element)
+
+### Example
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>My Page</title>
+  </head>
+  <body>
+    <hgroup>
+      <h1>The reality dysfunction</h1>
+      <p>Space is not the only void</p>
+    </hgroup>
+    <div>
+      <h1>Page Heading ungroupped</h1>
+      <p>Page details ungroupped</p>
+    </div>
+  </body>
+</html>
+```
+
+Using a div achieves a similar result as the hgroup but using the hgroup both tells the browser and users what specifically the element is. Two elements could be in a div but not directly related.
