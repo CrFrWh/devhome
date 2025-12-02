@@ -1,0 +1,58 @@
+---
+title: "Landmark Regions"
+description: ""
+category: "html"
+difficulty: "beginner"
+tags: ["", "", ""]
+---
+
+Landmarks provide programmatic access to sections of a web page. They are made available to browsers by assistive tech and extensions. They help navigate to sections of a page.
+
+They enable pages to have structure for assistive technology to understand the page. They provide the base landmarks for the rest of the semantic page.
+
+`<header>:` When a header is a direct child of the body element, it creates a banner role, a region that typically contains the site's logo, name, and other persistent site-wide content at the top of a page.
+
+`<nav>:` A region that contains navigation links to other pages or different parts of the same page.
+
+`<main>:` A region that contains a page's main content.
+
+`<section>:` A region that contains a generic section of a document or application. A section element isn't exposed as a landmark region unless it has an accessible name.
+
+`<form>:` A region of the document that represents a collection of form-associated elements, some of which can represent editable values that can be submitted to a server for processing. A form element isn't exposed as a landmark region unless it has an accessible name.
+
+`<aside>:` A region of the document that supports the main content, yet is separate and meaningful on its own.
+
+`<footer>:` A region that, when its nearest ancestor is the body element, contains information about the page such as copyrights and links to privacy statements.
+
+### Example
+
+```html
+<header>site logo and name, etc. here</header>
+<form aria-label="site search">search functionality here</form>
+<nav>a list of navigation links here</nav>
+<main>the page's main content here</main>
+<section>a sponsor's promotion here</section>
+<aside>sidebar content here</aside>
+<footer>site contact details, copyright information, etc. here</footer>
+```
+
+Best practices for multiple of the same landmarks with no text to label as reference
+
+```html
+<nav aria-label="Vehicles">
+  <ul>
+    <li><a aria-current="page" href="/cars">Cars</a></li>
+    <li><a href="/trucks">Trucks</a></li>
+    <li><a href="/bikes">Bikes</a></li>
+  </ul>
+</nav>
+<nav aria-label="Tags">
+  <ul>
+    <li><a href="/cars-electric">Electric Cars</a></li>
+    <li><a href="/cars-gas">Gas-powered Cars</a></li>
+    <li><a href="/cars-family">Family Cars</a></li>
+    <li><a href="/cars-working">Rugged Cars For Working</a></li>
+    <li><a href="/cars-commuting">Cars For Suburban Commuting</a></li>
+  </ul>
+</nav>
+```

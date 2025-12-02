@@ -27,5 +27,30 @@ const { title, description } = Astro.props;
 
   pre code {
     padding: 0;
+    line-height: 1.6; /* Increase from default ~1.2 */
+    font-size: 0.9rem; /* Slightly smaller to balance added height */
+    font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+      "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+    letter-spacing: 0.3px; /* Optional: subtle tracking improves legibility */
+    tab-size: 2; /* Controls tab rendering */
+  }
+
+  /* If Shiki adds a class like astro-code, you can be more specific */
+  pre.astro-code,
+  pre.astro-code code {
+    line-height: 1.6;
+  }
+
+  /* Keep inline code tight */
+  :not(pre) > code {
+    line-height: 1.2;
+    padding: 0.15rem 0.35rem;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Optional: make each token line respect the full width for consistent vertical rhythm */
+  pre code > span {
+    display: inline-block;
+    width: 100%;
   }
 </style>
