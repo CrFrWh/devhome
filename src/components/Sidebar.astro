@@ -43,8 +43,10 @@ function isTopicActive(topicId: string) {
     ))
   }
 
-  <div class="topics-section">
-    <div class="section-title">Topics</div>
+  <section class="topics-section">
+    <a href="/topics" class={`link${isActive("/topics") ? " active" : ""}`}>
+      Topics
+    </a>
     <input
       type="search"
       class="search-input"
@@ -74,7 +76,7 @@ function isTopicActive(topicId: string) {
         );
       })
     }
-  </div>
+  </section>
 </nav>
 
 <script>

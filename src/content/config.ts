@@ -14,6 +14,7 @@ const topics = defineCollection({
         "node",
         "general",
         "UX/UI",
+        "planning",
         "devtools",
         "performance",
         "accessibility",

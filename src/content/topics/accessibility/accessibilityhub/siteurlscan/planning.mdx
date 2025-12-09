@@ -1,0 +1,43 @@
+---
+title: "Accessiblity Scan by URL"
+description: ""
+category: "accessibility"
+difficulty: "n/a"
+tags: ["", "", ""]
+---
+
+Console app that takes a URL as a parameter for a web page. The console app scans that page and returns a list of Accessiblity/UX issues and potential solutions.
+
+It also rates the level of the issue and also what WCAG etc it relates to
+
+Input (URL) -> Fetch HTML -> Parse DOM -> Run Rule Engine -> Aggregate Issues -> Format Output -> Display/Save
+
+Potential Packages to use:
+[cheeriojs](https://github.com/cheeriojs/cheerio)
+
+[css-selector-parser](https://www.npmjs.com/package/css-selector-parser)
+
+## Plan
+
+Level of rules, WCAG level based. Set it then retains that for that session unless changed.
+
+### MVP
+
+- CLI interface
+- Core WCAG rules
+- Console output + JSON Export
+- Error handling
+
+### Phase 2
+
+- Report generation
+- Configuration file support (.a11yrc)
+- CI/changed
+- Color contract detection
+
+### Phase 3
+
+- JS event handler detection
+- Dynamic content analysis
+- Browser automation (headless Chrome)
+- AI-powered suggestions

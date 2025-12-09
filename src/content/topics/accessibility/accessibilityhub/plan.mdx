@@ -1,0 +1,41 @@
+---
+title: "Accessiblity Hub"
+description: ""
+category: "accessibility"
+difficulty: "n/a"
+tags: ["", "", ""]
+---
+
+## Plan
+
+Hub website that contains information for devs how to meet Accessiblity standard WCAG/EAA
+
+Basic guides etc on how to meet different areas
+
+How to go further, make your app more Accessible compared to others
+
+NPM dev package to work with Huskey on pre-commit to scan commit docs
+
+VS extension to intellisence/review changes in files
+
+Chrome extension to enable specific Accessiblity related settings. E.g. overlay a blur for people with poor sight, colour blindness etc
+
+Console app where you enter a URL and it provides how Accessible the linked doc is
+
+Fold the ESLint/TS ruleset and Storybook a11y stories into the npm package as optional plugins.
+Ship a GitHub Action alongside the CLI scanner for easy CI adoption.
+Extend the Chrome extension with a “record impairments profile” that can be shared with teammates.
+Add a design-token auditor mode to the CLI (reads a config or CSS vars, emits contrast matrix).
+
+Add hub sections: “by role,” “by phase,” and “by platform.”
+Ship GitHub Action + SARIF output with the CLI scanner.
+Extend the Chrome extension with sharable impairment profiles.
+Add the design-token auditor mode to the CLI (contrast matrix).
+Start a VS Code extension stub: inline lint + contrast checker.
+Publish Storybook a11y stories and an ESLint config in the npm package.
+Draft the role-based checklists and a “fix-it” cookbook page on the hub.
+
+Links to other tools
+
+Playwright
+[axe-core](https://github.com/dequelabs/axe-core)
