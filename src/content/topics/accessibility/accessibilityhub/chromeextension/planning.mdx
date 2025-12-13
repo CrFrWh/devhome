@@ -1,7 +1,206 @@
 ---
 title: "Chrome extension accessibility tester"
-description: ""
+description: "Chrome MV3 extension to layer accessibility simulations via toggleable overlays with least-privilege permissions."
 category: "accessibility"
 difficulty: "n/a"
-tags: ["", "", ""]
+tags: ["chrome-extension", "accessibility", "a11y-simulation"]
 ---
+
+## Goal
+
+Ship a Chrome MV3 extension that lets people stack accessibility simulations (blur/low vision, color filters, blindness overlay, keyboard-only, motor tremor, cognitive load) to feel compound barriers—built with least-privilege permissions, fast cleanup, and with zero page data leaving the browser. Go beyond "feel the barrier" to include testing, auditing, and education tooling.
+
+## Who this is for
+
+- Front-end devs (SPAs included)
+- QA and bug repro folks
+- Designers/UX writers
+- Accessibility advocates/educators
+- Privacy- and security-minded users
+
+## Permissions: least-privilege first
+
+- Default: activeTab, storage; no host perms.
+- Optional hosts: optional_host_permissions: ["*://*/*"].
+- Flows:
+  - "This tab (1h)" — time-limited, uses activeTab.
+  - "This site" — request host permission for current origin; track allowlist in sync storage.
+  - "All sites" — request "_://_/\*" with a clear rationale.
+- UX: status badge in popup; short reason ("we need to draw overlays on this page; nothing is sent off-device"); link to privacy note.
+- Revoke: per-site/all-sites buttons wired to chrome.permissions.remove.
+- Special cases: note chrome://\*, Web Store, restricted pages; file:// needs user toggle in chrome://extensions.
+- Demo mode: bundled test page that needs zero host perms.
+- Injection: on-demand via chrome.scripting.executeScript; no persistent content scripts unless the user opts into "apply everywhere."
+- Offline-first confirmation: explicit toggle "Run fully offline; no analytics ever" to build trust with privacy-conscious users.
+
+## User stories (grounded)
+
+- Dev: Stack sims on a page, share the exact config for repro.
+- QA: Run a preset, capture active modes/intensity, attach to a bug without page data.
+- Designer: Toggle visual-only sims (blur, contrast, color, spacing) to judge legibility; use before/after split view for stakeholder demos.
+- Advocate: Demo compound disabilities live with quick reset/panic-off; show real user stories linked to each mode.
+- Cautious user: Try everything on the built-in demo page before granting site/all-sites.
+- Perf-minded user: Flip "lightweight mode" to keep scroll smooth on weaker machines.
+- Keyboard-only tester: Hide cursor, enforce visible focus, block pointer events to test nav; visualize tab order via keyboard heatmap.
+- SPA dev: Overlays survive client-side route changes without re-enabling.
+- Privacy-sensitive: Confirm no page content is read or transmitted—only config in storage.
+- Accessibility tester: Run audit sidebar to flag missing alt text, unlabeled inputs, low contrast regions without exporting.
+- Team lead: Save and share presets by role (Designer review, QA full barrier test, Advocate demo).
+
+## Modes (MVP)
+
+- Low vision: blur + contrast + text scale sliders.
+- Color vision deficiency: protanopia/deuteranopia/tritanopia filters.
+- Blindness: full black overlay, optional screen reader hint banner ("This mode simulates blindness; use NVDA/JAWS for best experience").
+- Keyboard-only: hide cursor, force focus ring, optional pointer-events none; keyboard nav heatmap showing tab order.
+- Motor/tremor: cursor wobble (rAF throttled), optional click delay/jitter.
+- Vestibular/motion: reduce animations, remove flashing, dim motion-heavy elements; add prefers-reduced-motion CSS enforcement.
+- Cognitive: letter/line spacing tweaks, mild word jitter (visual only); highlight info density and excessive CTAs.
+- Optional hearing: page mute + captions reminder; flag videos without captions.
+
+## Enhanced features (differentiation)
+
+- Before/after split view: side-by-side viewport; drag divider to compare page with/without active sims; useful for stakeholder demos and design reviews.
+- Accessibility audit sidebar: lightweight overlay showing:
+  - Missing alt text on images
+  - Unlabeled form inputs
+  - Low contrast text regions (WCAG AA/AAA flagging)
+  - Missing ARIA labels
+  - Keyboard-inaccessible interactive elements
+  - Actionable fixes per issue (e.g., "increase font to 16px minimum").
+- Screen reader hints: per mode, surface a banner ("This works best with a screen reader; try NVDA [link] or JAWS [link]").
+- Keyboard nav heatmap: visual overlay showing tab order, focus traps, and keyboard-accessible elements.
+- ARIA inspector: lightweight on-hover tooltips showing roles/labels (similar to DevTools but inline).
+- Preset templates by role:
+  - "Designer review" (visual-only: low vision, color filters, contrast, spacing).
+  - "QA full barrier test" (all modes stacked at moderate intensity).
+  - "Keyboard-only tester" (keyboard, focus ring, nav heatmap).
+  - "Advocate demo" (compound setup: low vision + keyboard-only + motion reduction).
+  - "Mobile touch test" (48x48 touch target enforcement, hover-state stripping).
+- Real user story links: each mode includes a 2-min video or article from actual disabled users describing how they navigate.
+- Quick stats banner: "3 modes active, 8 ARIA issues found, 2 low-contrast regions" — at a glance.
+- Panic-off timer UI: show countdown if session timer is active; users won't forget overlays are on.
+
+## Safety, accessibility, performance
+
+- Panic-off: global shortcut (e.g., Alt+Shift+X) via service worker; in-page pause button.
+- Performance mode: throttle animations, trim heavy effects.
+- SPA: listen for URL changes; reattach overlay root.
+- Iframes/shadow DOM: best-effort same-origin; surface a notice for cross-origin limits.
+- Tool a11y: popup/badges are keyboardable, labeled, and high-contrast.
+- Session timer: optional auto-disable after N minutes; visible countdown.
+- Permissions audit log: show what you're accessing (activeTab on which domains, when revoked).
+
+## Education
+
+- Each mode: "This simulates / Does not simulate" + WCAG ref + real example link + user story video.
+- Privacy line: "No page data leaves your browser; only presets/config stored locally/sync."
+- Accessibility checklist: per-mode, surface actionable fixes (e.g., "low vision? Increase font size to 16px minimum").
+
+## Data model (chrome.storage.sync)
+
+```json
+{
+  "activeModes": ["lowVision", "keyboardOnly"],
+  "intensity": { "lowVision": 6, "tremor": 0.3 },
+  "presets": [
+    { "name": "Designer review", "modes": [...], "intensity": {...}, "role": "designer" },
+    { "name": "QA full test", "modes": [...], "intensity": {...}, "role": "qa" }
+  ],
+  "lastPreset": "Designer review",
+  "originsAllowed": ["https://example.com", "*"],
+  "lightweightMode": true,
+  "sessionTimeoutMinutes": 60,
+  "auditSidebarEnabled": true,
+  "beforeAfterSplitEnabled": false,
+  "offlineModeConfirmed": true
+}
+```
+
+## System Design (engineer view)
+
+- Architecture: MV3 with background service worker (shortcuts, permission orchestration), popup UI (controls/presets), on-demand content scripts (overlays + audit sidebar), optional demo page (no permissions).
+- Injection model: On-demand via chrome.scripting.executeScript; one overlay root with shadow DOM; per-mode modules managing CSS vars and lightweight JS; separate audit sidebar DOM.
+- State & storage: chrome.storage.sync for presets, intensities, permission allowlist; in-memory cache in content script for fast updates; background owns permission truth and shortcuts.
+- Messaging: Popup ⇄ background ⇄ content script via runtime messages; events for setModes, updateIntensity, applyPreset, resetAll, permissionStatus, auditResults; content returns current state + audit findings for UI sync.
+- Permissions: activeTab + storage by default; optional_host_permissions for per-origin/all-sites; revoke via chrome.permissions.remove; time-limited tab access tracked in background with expiry.
+- Audit scanner: DOM walker to collect alt text, ARIA labels, contrast ratios (lightweight, no external API calls); cache results, update on demand.
+- Before/after split: iframe-based or CSS clip-path; maintain sync between two viewport instances; drag divider handler.
+- Resilience: URL change observer for SPAs; reattach overlay root if DOM resets; guard against multiple mounts; best-effort same-origin iframe support.
+- Performance: rAF-throttled animations (tremor), CSS filters for visuals, "lightweight mode" to disable heavy effects; audit scanner runs once on injection, not continuously; cleanup removes listeners/DOM nodes; short-circuit if FPS drops.
+- Safety/UX: Global panic-off shortcut (Alt+Shift+X) handled in background + in-page pause; notices for restricted pages; privacy guarantee; explicit rationale when requesting permissions.
+- Accessibility of the tool: Popup, sidebar, and badges are fully keyboardable, labeled, high-contrast; focus management on open/close; ARIA for controls.
+- Extensibility: Mode modules expose enable/disable/update; presets are pure data; audit plugins can be added; future modes plug into the same overlay root/message contract.
+- Observability (no telemetry off-page): console debug flag; optional "session report" export (config + audit findings only) for bug repro; no content capture or exfiltration.
+
+## UX flows
+
+- Popup: mode toggles/sliders; presets (with role templates); all off; lightweight mode; permission controls (tab/site/all-sites); revoke; status badge; education popovers; panic-off hint; audit results summary.
+- Audit sidebar: collapsible panel on page right edge; lists issues with locations; click to jump to element; actionable fix suggestions.
+- Before/after split view: optional toggle; divider drag to compare; synced scroll/zoom.
+- On-page badge: active modes, pause-all, quick reset, timer countdown.
+- Demo page: bundled HTML to trial effects + audit + before/after with zero permissions.
+- Preset save/share: name, role tag, copy to clipboard, export/import JSON.
+
+## Build steps
+
+1. Scaffold MV3: manifest, popup, background SW, storage helpers, offline confirmation.
+2. Permission UI/logic: request/revoke tab/site/all-sites; time-limited tab flow; status badge; permissions audit log.
+3. Injection shell: on-demand scripting, overlay root with shadow DOM, cleanup; audit sidebar template.
+4. Implement modes: low vision, color filters, blindness, keyboard-only, motor, vestibular, cognitive; rAF-throttled animations; screen reader hints.
+5. Audit scanner: DOM walker for alt text, ARIA labels, contrast checks; display in sidebar with actionable fixes.
+6. Before/after split: iframe or clip-path approach; divider drag; synced scroll.
+7. Keyboard nav heatmap: tab order visualization; focus trap detection.
+8. Preset templates by role: Designer, QA, Keyboard-only, Advocate, Mobile; pre-populate with mode/intensity combos.
+9. Popup polish: toggles, sliders, presets, all-off, lightweight, panic-off, education, role templates.
+10. Persistence/sharing: presets, copy config to clipboard, export/import JSON, session report.
+11. Real user story links: curate + embed 2-min video links per mode (or partner with a11y orgs).
+12. SPA/iframe handling: URL observer, same-origin iframe attempts; notices for restricted pages.
+13. QA/perf: layering, cleanup, permission flows, panic-off, timeouts, smooth scroll on low-end, audit performance.
+14. Docs/listing: permission rationale, privacy statement, limits, demo GIF, feature walkthrough.
+
+## Acceptance
+
+- Sims toggle independently and stack; intensity live-updates without reload.
+- "All off" and panic-off remove overlays/listeners cleanly.
+- Presets + permissions (tab/site/all-sites) persist and revoke cleanly; timeouts work with visible countdown.
+- Popup/badge/sidebar meet WCAG AA; demo works without host perms.
+- SPA routes keep overlays; restricted pages fail gracefully with a notice.
+- Perf mode keeps interactions smooth; no page data leaves the browser.
+- Audit sidebar flags issues accurately; before/after split syncs and performs smoothly.
+- Preset templates are discoverable and save dev setup time.
+- Screen reader hints appear contextually; user story links load cleanly.
+
+## Identified gaps & future considerations
+
+- **Audit API scope**: current audit is visual/DOM-based. Future: integrate WCAG-specific rules engine (e.g., axe, Pa11y) if offline feasibility allows.
+- **Audio description simulation**: hard to simulate without hosting audio; defer to v2 or partner with media orgs.
+- **Cognitive load quantification**: current approach is visual. Future: heuristic scoring (# of CTAs, text density) to surface metrics.
+- **Mobile testing**: touch target enforcement is in, but no true mobile viewport sim (e.g., narrow screens). Add optional viewport constraints.
+- **Color blindness accuracy**: use established Brettel/Vienot matrices; verify filters against real color-blind user feedback.
+- **Real-time collaboration**: no built-in team features (e.g., shared session state). Defer to browser sync or external tools.
+- **Cross-browser**: MV3 is Chrome/Edge/Chromium only. Firefox support (using WebExtensions API) is a future port.
+- **Legal/liability**: document explicitly: "Simulation ≠ reality; always test with real users and assistive tech."
+
+## Future implementation
+
+### High-priority gaps to address post-MVP
+
+- **Audit accuracy and depth**: current DOM-based checks are shallow. Integrate a lightweight WCAG rules engine (e.g., axe-core in service worker, or lightweight custom ruleset) to flag more sophisticated issues (heading hierarchy, label associations, form validation messaging). Ensure offline feasibility.
+- **Mobile/responsive viewport simulation**: enforce narrow viewport constraints (mobile widths), strip hover states, enforce 48x48 touch targets, simulate touch-only navigation. Allow toggle between desktop/mobile testing modes.
+- **Real user feedback loops**: partner with disability-led organizations to validate sim accuracy; collect feedback on "does this reflect reality?" and iterate filters/effects accordingly. Link to user feedback in education popovers.
+- **Cognitive load metrics and heuristics**: move beyond visual tweaks to surface quantitative scoring (# of CTAs per fold, text density, color count, animation frequency). Flag overload and suggest fixes (e.g., "reduce CTAs from 7 to 3 above fold").
+- **Color blindness filter validation**: use established Brettel/Vienot CVD transformation matrices; test filters against real color-blind user feedback and compare against tools like Color Oracle.
+- **Mobile/touch interaction simulation**: simulate touch events instead of mouse (tap delay, touch jitter, accidental swipes). Show touch feedback visuals (ripples, highlights).
+- **Cross-browser support**: port to Firefox (WebExtensions API) and Safari (App Extensions) to reach beyond Chromium users. Maintain feature parity where API differences allow.
+- **Audio description and captions**: integrate caption detection/flagging for videos. For audio, defer to v2 or partner with media accessibility orgs to surface audio description needs without hosting content.
+- **Real-time team collaboration**: add optional preset sharing via URL or session token; allow teams to save and compare session states (optional, non-default). Consider Sync API for multi-device sync.
+- **Legal and liability framework**: develop clear "Simulation is not reality" disclaimer; document when to use this tool vs. real users + assistive tech. Partner with a11y orgs on messaging. Include in store listing and help docs.
+
+### Nice-to-have enhancements
+
+- Session recording and replay: capture screen + active modes; replay to see compound effect.
+- Integration with CI/CD: headless mode for automated a11y checks in pipelines.
+- Custom filter/mode building: power users can define custom CSS filters or JS effects.
+- Accessibility patterns library: link each sim mode to WCAG success criteria, ARIA patterns, and code examples.
+- Telemetry-optional insights: opt-in anonymized usage data (no page content) to understand which sims/modes are most used (helps prioritize future work).
