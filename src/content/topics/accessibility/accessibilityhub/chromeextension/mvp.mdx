@@ -1,0 +1,47 @@
+---
+title: "Chrome extension accessibility tester MVP"
+description: "Chrome MV3 extension to layer accessibility simulations via toggleable overlays with least-privilege permissions."
+category: "accessibility"
+difficulty: "n/a"
+tags: ["chrome-extension", "accessibility", "a11y-simulation", "MVP"]
+---
+
+## Implementation for the Chrome extension
+
+### Called AccessLens
+
+Repo located here: [AccessLens](https://github.com/CrFrWh/accesslens)
+
+This chrome extension is to enable an easy way for developers and others to view a site through the lens of accessibility. Having tests does cover a lot of these potential issues but being able to see and interact with your/other websites is invaluable in making the experience more pleasurable. The goal of this extension is to help people go further than just ticking accessibility boxes.
+
+Broken down into categories of controls realted to accessibility. Each category has a set of controls which can have a compound effect on the browser.
+
+- Blindness
+  - Black screen to force users to rely on screen reader software for usage.
+- Cognitive
+  - Letter spacing
+  - Line height
+- CVD (Color Vision Deficiency)
+  - None / Protanopia (red-blind) / Deuteranopia (green-blind) / Tritanopia (blue-blind) / Monochromacy (grayscale)
+  - Intensity
+- Hearing
+  - Mute page audio (on/off)
+  - Captions reminder
+- Keyboard
+  - Keyboard only mode (on/off)
+  - Hide cursor (on/off)
+  - Enforce visible focus ring
+  - Block pointer events
+  - Show keyboard nav heatmap
+- Low Vision
+  - Blur (On/off)
+  - Blur intensity
+- Tremor
+  - Motor Tremor Simulation (on/off)
+  - Wobble intensity
+- Vestibular
+  - Motion Reduction (on/off)
+    - Reduce animation duration (auto-apply prefers-reduced-motion)
+    - Remove/fade flashing elements
+    - Dim motion-heavy elements
+    - Enforce CSS prefers-reduced-motion globally
